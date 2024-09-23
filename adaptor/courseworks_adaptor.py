@@ -1,5 +1,5 @@
 import requests
-from .context import Context
+from context import Context
 
 
 class Adapter:
@@ -72,7 +72,7 @@ class Adapter:
         return status_code, all_data
 
     @classmethod
-    def get_courses(cls, course_id=None, role=None):
+    def get_sections(cls, course_id=None, role=None, section_id=None):
         url = Adapter.context.courseworks_section_url
 
         if course_id is not None:
@@ -83,12 +83,23 @@ class Adapter:
 
         result = cls.get_with_pagination(url)
 
-        ret = result
+        final_result = None
+
+        if section_id is not None:
+            for s in result[1]:
+                if s.get("sis_course_id", None) == section_id:
+                    final_result = s
+                    break
+        else:
+            final_result = result
+
+        ret = final_result
         return ret
+
 
     @classmethod
     def get_students(cls, class_id, student_id=None):
-        url = Adapter.context.courseworks_base_url + "/courses/" + str(class_id) + "/users"
+        url = Adapter.context.courseworks_base_url + "/courses/" + str(class_id) + "/users?include[]=enrollments"
         if student_id is not None:
             url += "/" + str(student_id)
 
